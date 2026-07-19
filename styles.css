@@ -95,3 +95,41 @@ a:hover {
   margin-bottom: 1rem;
   font-weight: 600;
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.25rem 0.8rem 2rem;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .hero p {
+    font-size: 0.95rem;
+  }
+
+  .card,
+  .page {
+    padding: 0.8rem;
+    border-radius: 12px;
+  }
+
+  .page {
+    margin: 1rem;
+  }
+
+  table {
+    min-width: 100%;
+    font-size: 0.95rem;
+  }
+
+  th,
+  td {
+    padding: 0.7rem 0.5rem;
+  }
+
+  a {
+    word-break: break-word;
+  }
+}
