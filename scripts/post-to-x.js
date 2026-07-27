@@ -1,5 +1,5 @@
-import crypto from 'node:crypto';
 import process from 'node:process';
+import { TwitterApi } from 'twitter-api-v2';
 
 const referrals = [
   {
@@ -53,61 +53,16 @@ if (!process.env.X_API_KEY || !process.env.X_API_SECRET || !process.env.X_ACCESS
   process.exit(0);
 }
 
-const oauth = {
-  consumer_key: process.env.X_API_KEY,
-  consumer_secret: process.env.X_API_SECRET,
-  token: process.env.X_ACCESS_TOKEN,
-  token_secret: process.env.X_ACCESS_TOKEN_SECRET
-};
-
-function generateAuthHeader(method, url, params) {
-  const oauthParams = {
-    oauth_consumer_key: oauth.consumer_key,
-    oauth_nonce: crypto.randomBytes(8).toString('hex'),
-    oauth_signature_method: 'HMAC-SHA1',
-    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
-    oauth_token: oauth.token,
-    oauth_version: '1.0'
-  };
-
-  const allParams = { ...oauthParams, ...params };
-  const sorted = Object.entries(allParams).sort(([a], [b]) => a.localeCompare(b));
-  const encoded = sorted.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
-  const signatureBase = `${method.toUpperCase()}&${encodeURIComponent(url)}&${encodeURIComponent(encoded)}`;
-  const signingKey = `${encodeURIComponent(oauth.consumer_secret)}&${encodeURIComponent(oauth.token_secret)}`;
-  const signature = crypto.createHmac('sha1', signingKey).update(signatureBase).toString('base64');
-  const authHeader = Object.entries({
-    ...oauthParams,
-    oauth_signature: signature
-  }).map(([k, v]) => `${k}="${encodeURIComponent(v)}"`).join(', ');
-
-  return `OAuth ${authHeader}`;
-}
-
-async function postToX(status) {
-  const url = 'https://api.twitter.com/2/tweets';
-  const body = JSON.stringify({ text: status });
-  const authHeader = generateAuthHeader('POST', url, {});
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json'
-    },
-    body
-  });
-
-  const data = await response.text();
-  if (!response.ok) {
-    throw new Error(`X API error ${response.status}: ${data}`);
-  }
-
-  console.log('Posted to X:', data);
-}
+const client = new TwitterApi({
+  appKey: process.env.X_API_KEY,
+  appSecret: process.env.X_API_SECRET,
+  accessToken: process.env.X_ACCESS_TOKEN,
+  accessSecret: process.env.X_ACCESS_TOKEN_SECRET
+});
 
 try {
-  await postToX(text);
+  const response = await client.v2.tweet(text);
+  console.log('Posted to X:', response.data.id);
 } catch (error) {
   console.error(error.message);
   process.exit(1);

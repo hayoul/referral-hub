@@ -5,5 +5,8 @@
   "type": "module",
   "scripts": {
     "post:x": "node scripts/post-to-x.js"
+  },
+  "dependencies": {
+    "twitter-api-v2": "^1.24.0"
   }
 }
